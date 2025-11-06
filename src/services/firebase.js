@@ -22,18 +22,19 @@ import {
   limit,
   where,
   runTransaction,
-  increment
+  increment,
+  getCountFromServer
 } from "firebase/firestore";
 
 // --- Firebase Configuration ---
 // Make sure this is filled with your real keys!
 const firebaseConfig = {
-  apiKey: "AIzaSyAmlcpA9zfDhiwsHsVpNhoXg1bQNdeTdVc",
-  authDomain: "geekroom-e7b67.firebaseapp.com",
-  projectId: "geekroom-e7b67",
-  storageBucket: "geekroom-e7b67.firebasestorage.app",
-  messagingSenderId: "30583606",
-  appId: "1:30583606:web:e17ee5470151f6cf73a197"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // --- Initialize Firebase Services ---
@@ -382,5 +383,54 @@ export const getQuestionById = async (questionId) => {
     return { success: false, error: error };
   }
 };
+// Add 'getCountFromServer' to your 'firebase/firestore' imports at the top
+// e.g., import { db, auth, collection, getCountFromServer, ... } from "./firebase.js";
+
+// --- PASTE THESE NEW FUNCTIONS AT THE END OF THE FILE ---
+
+/**
+ * Gets the total count of all questions.
+ */
+export async function getTotalQuestionCount() {
+  try {
+    const questionsCol = collection(db, "questions");
+    const snapshot = await getCountFromServer(questionsCol);
+    return { success: true, count: snapshot.data().count };
+  } catch (error) {
+    console.error("Error getting question count:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Gets the total count of all answers.
+ */
+export async function getTotalAnswerCount() {
+  try {
+    // NOTE: This assumes all answers are in a single 'answers' collection
+    // If you have answers nested, this will need to be different.
+    const answersCol = collection(db, "answers");
+    const snapshot = await getCountFromServer(answersCol);
+    return { success: true, count: snapshot.data().count };
+  } catch (error) {
+    console.error("Error getting answer count:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Gets the total count of all users.
+ */
+export async function getTotalUserCount() {
+  try {
+    // This assumes your user profiles are in a 'users' collection
+    const usersCol = collection(db, "users");
+    const snapshot = await getCountFromServer(usersCol);
+    return { success: true, count: snapshot.data().count };
+  } catch (error) {
+    console.error("Error getting user count:", error);
+    return { success: false, error: error.message };
+  }
+}
 // Export auth and db
 export { auth, db };

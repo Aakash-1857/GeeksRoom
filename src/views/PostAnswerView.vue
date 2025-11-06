@@ -1,54 +1,75 @@
 <template>
-  <div> <div> 
-      <h2>Login</h2>
-      <form @submit.prevent="handleSubmit">
-        <input type="email" v-model="email" placeholder="Email" required />
-        <input type="password" v-model="password" placeholder="Password" required />
-        <button type="submit" :disabled="userStore.isLoading">Login</button>
-      </form>
-      <div v-if="userStore.error" class="alert alert-error" role="alert">{{ userStore.error }}</div>
-      <p class="signup-prompt">
-        Don't have an account? 
-        <router-link to="/signup">Sign Up</router-link>
+  <div class="post-answer-view">
+    <div class="post-answer-form">
+      <h4>Your Answer</h4>
+      <p>
+        Posting an answer to:
+        <strong>{{ questionTitle }}</strong>
       </p>
+      <form @submit.prevent="handlePostAnswer">
+        <textarea
+          v-model="newAnswerContent"
+          placeholder="Type your answer here..."
+          required
+        ></textarea>
+        <button type="submit" :disabled="answerStore.isLoading">
+          {{ answerStore.isLoading ? "Posting..." : "Post Answer" }}
+        </button>
+      </form>
+      <div v-if="answerStore.error" class="alert alert-error" role="alert">
+        {{ answerStore.error }}
+      </div>
     </div>
-    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref,onMounted } from 'vue';
-import { useUserStore } from '@/stores/userStore';
-import { useRouter,onBeforeRouteLeave } from 'vue-router';
+import { ref, computed } from "vue";
+import { useAnswerStore } from "@/stores/answerStore";
+import { useQuestionStore } from "@/stores/questionStore";
+import { useRouter } from "vue-router";
 
-const userStore = useUserStore();
+// --- Props & Route ---
+const props = defineProps({
+  id: {
+    type: String,
+    required: true,
+  },
+});
+
 const router = useRouter();
+const answerStore = useAnswerStore();
+const questionStore = useQuestionStore();
 
-const email = ref('');
-const password = ref('');
-// Clear any old errors when the component is first loaded
-onMounted(() => {
-  userStore.error = null;
-});
-// Clear any errors when the user navigates *away* from this page
-onBeforeRouteLeave(() => {
-  userStore.error = null;
+// --- State ---
+const newAnswerContent = ref("");
+
+// Get the question title for context
+const questionTitle = computed(() => {
+  const q = questionStore.allQuestions.find((q) => q.id === props.id);
+  return q ? q.title : "this question";
 });
 
-const handleSubmit = async () => {
-  const { success } = await userStore.handleSignIn(
-    email.value, 
-    password.value
-  );
-  if (success) {
-    // On success, redirect to the home page
-    router.push('/feed');
+// --- Actions ---
+const handlePostAnswer = async () => {
+  if (!newAnswerContent.value.trim()) return;
+
+  // Set the current question ID in the store, just in case
+  answerStore.currentQuestionId = props.id;
+
+  await answerStore.postAnswer(newAnswerContent.value);
+
+  // --- THIS IS THE CHANGE ---
+  // On success, redirect back to the QuestionDetail page
+  if (!answerStore.error) {
+    router.push({ name: "QuestionDetail", params: { id: props.id } });
   }
 };
 </script>
 
 <style scoped>
 /* Container - centers the form card */
-div {
+.post-answer-view {
   position: relative;
   display: grid;
   place-items: center;
@@ -58,7 +79,7 @@ div {
 }
 
 /* Animated background elements */
-div::before {
+.post-answer-view::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -71,7 +92,7 @@ div::before {
   animation: float 20s infinite ease-in-out;
 }
 
-div::after {
+.post-answer-view::after {
   content: '';
   position: absolute;
   bottom: -30%;
@@ -91,10 +112,10 @@ div::after {
 }
 
 /* Form card wrapper */
-div > div {
+.post-answer-view > * {
   position: relative;
   width: 100%;
-  max-width: 28rem;
+  max-width: 42rem;
   padding: clamp(2rem, 5vw, 3rem);
   background: rgba(26, 26, 26, 0.6);
   border: 1px solid rgba(127, 90, 240, 0.2);
@@ -107,7 +128,7 @@ div > div {
 }
 
 /* Subtle glow effect on card */
-div > div::before {
+.post-answer-view > *::before {
   content: '';
   position: absolute;
   inset: -1px;
@@ -121,15 +142,15 @@ div > div::before {
   transition: opacity 0.4s;
 }
 
-div > div:hover::before {
+.post-answer-view > *:hover::before {
   opacity: 1;
 }
 
 /* Heading */
-h2 {
-  margin: 0 0 clamp(2rem, 5vw, 2.5rem);
+h4 {
+  margin: 0 0 clamp(1.25rem, 3vw, 1.5rem);
   color: var(--color-text);
-  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
   font-weight: 800;
   text-align: center;
   letter-spacing: -0.02em;
@@ -140,6 +161,33 @@ h2 {
   animation: fadeIn 0.6s ease-out 0.2s backwards;
 }
 
+/* Context paragraph */
+p {
+  margin: 0 0 clamp(2rem, 4vw, 2.5rem);
+  padding: clamp(1rem, 2.5vw, 1.25rem);
+  background: rgba(13, 13, 13, 0.5);
+  border: 1px solid rgba(127, 90, 240, 0.15);
+  border-radius: 0.75rem;
+  color: var(--color-text-muted);
+  font-size: clamp(0.9375rem, 2vw, 1rem);
+  line-height: 1.7;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.6s ease-out 0.3s backwards;
+}
+
+p strong {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Form */
 form {
   display: flex;
@@ -148,10 +196,11 @@ form {
   animation: fadeIn 0.6s ease-out 0.4s backwards;
 }
 
-/* Input fields */
-input[type="email"],
-input[type="password"] {
+/* Textarea */
+textarea {
   width: 100%;
+  min-height: 200px;
+  max-height: 500px;
   padding: clamp(1rem, 2.5vw, 1.125rem);
   background: rgba(13, 13, 13, 0.8);
   border: 1px solid rgba(127, 90, 240, 0.2);
@@ -159,19 +208,19 @@ input[type="password"] {
   color: var(--color-text);
   font-size: clamp(1rem, 2vw, 1rem);
   font-family: var(--font-family);
+  line-height: 1.6;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
   backdrop-filter: blur(10px);
+  resize: vertical;
 }
 
-input[type="email"]::placeholder,
-input[type="password"]::placeholder {
+textarea::placeholder {
   color: var(--color-text-muted);
   opacity: 0.6;
 }
 
-input[type="email"]:focus,
-input[type="password"]:focus {
+textarea:focus {
   border-color: var(--color-primary);
   background: rgba(13, 13, 13, 0.95);
   box-shadow: 0 0 0 4px rgba(127, 90, 240, 0.15),
@@ -179,8 +228,7 @@ input[type="password"]:focus {
   transform: translateY(-2px);
 }
 
-input[type="email"]:hover:not(:focus),
-input[type="password"]:hover:not(:focus) {
+textarea:hover:not(:focus) {
   border-color: rgba(127, 90, 240, 0.4);
   background: rgba(13, 13, 13, 0.9);
 }
@@ -252,42 +300,6 @@ button[type="submit"]:disabled {
   animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Signup prompt */
-.signup-prompt {
-  margin-top: clamp(1.75rem, 4vw, 2rem);
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: clamp(0.9375rem, 2vw, 1rem);
-  animation: fadeIn 0.6s ease-out 0.6s backwards;
-}
-
-.signup-prompt a {
-  color: var(--color-accent);
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.signup-prompt a::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.signup-prompt a:hover {
-  color: var(--color-primary);
-}
-
-.signup-prompt a:hover::after {
-  width: 100%;
-}
-
 /* Animations */
 @keyframes slideUp {
   from {
@@ -318,18 +330,22 @@ button[type="submit"]:disabled {
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
-  div > div {
+  .post-answer-view > * {
     padding: clamp(1.5rem, 5vw, 2rem);
     border-radius: 1rem;
   }
   
-  h2 {
-    margin-bottom: 1.75rem;
+  h4 {
+    margin-bottom: 1.25rem;
   }
   
-  input[type="email"],
-  input[type="password"] {
+  p {
     padding: 0.875rem;
+  }
+  
+  textarea {
+    padding: 0.875rem;
+    min-height: 180px;
   }
   
   button[type="submit"] {
@@ -339,20 +355,18 @@ button[type="submit"]:disabled {
 
 /* Ensure 16px minimum on mobile to prevent zoom */
 @media (max-width: 768px) {
-  input[type="email"],
-  input[type="password"] {
+  textarea {
     font-size: 16px;
   }
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  div > div {
+  .post-answer-view > * {
     border-width: 2px;
   }
   
-  input[type="email"],
-  input[type="password"] {
+  textarea {
     border-width: 2px;
   }
 }

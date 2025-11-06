@@ -1,54 +1,67 @@
 <template>
-  <div> <div> 
-      <h2>Login</h2>
-      <form @submit.prevent="handleSubmit">
-        <input type="email" v-model="email" placeholder="Email" required />
-        <input type="password" v-model="password" placeholder="Password" required />
-        <button type="submit" :disabled="userStore.isLoading">Login</button>
+  <div class="ask-question-view">
+    <div class="post-question-form">
+      <h3>Ask a New Question</h3>
+      <form @submit.prevent="handlePostQuestion">
+        <input
+          type="text"
+          v-model="newQuestionTitle"
+          placeholder="What's your question?"
+          required
+        />
+        <textarea
+          v-model="newQuestionContent"
+          placeholder="Add more details..."
+          required
+        ></textarea>
+        <button type="submit" :disabled="questionStore.isLoading">
+          {{ questionStore.isLoading ? "Posting..." : "Post Question" }}
+        </button>
       </form>
-      <div v-if="userStore.error" class="alert alert-error" role="alert">{{ userStore.error }}</div>
-      <p class="signup-prompt">
-        Don't have an account? 
-        <router-link to="/signup">Sign Up</router-link>
-      </p>
+      <div v-if="questionStore.error" class="alert alert-error" role="alert">
+        {{ questionStore.error }}
+      </div>
     </div>
-    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref,onMounted } from 'vue';
-import { useUserStore } from '@/stores/userStore';
-import { useRouter,onBeforeRouteLeave } from 'vue-router';
+import { ref } from "vue";
+import { useQuestionStore } from "@/stores/questionStore";
+import { useRouter } from "vue-router";
 
-const userStore = useUserStore();
+// --- Store Setup ---
+const questionStore = useQuestionStore();
 const router = useRouter();
 
-const email = ref('');
-const password = ref('');
-// Clear any old errors when the component is first loaded
-onMounted(() => {
-  userStore.error = null;
-});
-// Clear any errors when the user navigates *away* from this page
-onBeforeRouteLeave(() => {
-  userStore.error = null;
-});
+// --- State for New Question Form ---
+const newQuestionTitle = ref("");
+const newQuestionContent = ref("");
 
-const handleSubmit = async () => {
-  const { success } = await userStore.handleSignIn(
-    email.value, 
-    password.value
-  );
-  if (success) {
-    // On success, redirect to the home page
-    router.push('/feed');
+// --- Actions ---
+const handlePostQuestion = async () => {
+  if (!newQuestionTitle.value.trim() || !newQuestionContent.value.trim()) {
+    return; // Simple validation
   }
+
+  // Call the optimistic action from the store
+  await questionStore.postQuestion(
+    newQuestionTitle.value,
+    newQuestionContent.value
+  );
+
+  // --- THIS IS THE CHANGE ---
+  // On success, redirect to the home page to see the new question
+  if (!questionStore.error) {
+    router.push({ name: 'Home' });
+  }
+  // If there was an error, the template will show it.
 };
 </script>
 
 <style scoped>
 /* Container - centers the form card */
-div {
+.ask-question-view {
   position: relative;
   display: grid;
   place-items: center;
@@ -58,7 +71,7 @@ div {
 }
 
 /* Animated background elements */
-div::before {
+.ask-question-view::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -71,7 +84,7 @@ div::before {
   animation: float 20s infinite ease-in-out;
 }
 
-div::after {
+.ask-question-view::after {
   content: '';
   position: absolute;
   bottom: -30%;
@@ -91,10 +104,10 @@ div::after {
 }
 
 /* Form card wrapper */
-div > div {
+.ask-question-view > * {
   position: relative;
   width: 100%;
-  max-width: 28rem;
+  max-width: 42rem;
   padding: clamp(2rem, 5vw, 3rem);
   background: rgba(26, 26, 26, 0.6);
   border: 1px solid rgba(127, 90, 240, 0.2);
@@ -107,7 +120,7 @@ div > div {
 }
 
 /* Subtle glow effect on card */
-div > div::before {
+.ask-question-view > *::before {
   content: '';
   position: absolute;
   inset: -1px;
@@ -121,12 +134,12 @@ div > div::before {
   transition: opacity 0.4s;
 }
 
-div > div:hover::before {
+.ask-question-view > *:hover::before {
   opacity: 1;
 }
 
 /* Heading */
-h2 {
+h3 {
   margin: 0 0 clamp(2rem, 5vw, 2.5rem);
   color: var(--color-text);
   font-size: clamp(1.75rem, 5vw, 2.25rem);
@@ -149,8 +162,8 @@ form {
 }
 
 /* Input fields */
-input[type="email"],
-input[type="password"] {
+input[type="text"],
+textarea {
   width: 100%;
   padding: clamp(1rem, 2.5vw, 1.125rem);
   background: rgba(13, 13, 13, 0.8);
@@ -164,14 +177,21 @@ input[type="password"] {
   backdrop-filter: blur(10px);
 }
 
-input[type="email"]::placeholder,
-input[type="password"]::placeholder {
+textarea {
+  min-height: 160px;
+  max-height: 400px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
   color: var(--color-text-muted);
   opacity: 0.6;
 }
 
-input[type="email"]:focus,
-input[type="password"]:focus {
+input[type="text"]:focus,
+textarea:focus {
   border-color: var(--color-primary);
   background: rgba(13, 13, 13, 0.95);
   box-shadow: 0 0 0 4px rgba(127, 90, 240, 0.15),
@@ -179,8 +199,8 @@ input[type="password"]:focus {
   transform: translateY(-2px);
 }
 
-input[type="email"]:hover:not(:focus),
-input[type="password"]:hover:not(:focus) {
+input[type="text"]:hover:not(:focus),
+textarea:hover:not(:focus) {
   border-color: rgba(127, 90, 240, 0.4);
   background: rgba(13, 13, 13, 0.9);
 }
@@ -252,42 +272,6 @@ button[type="submit"]:disabled {
   animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Signup prompt */
-.signup-prompt {
-  margin-top: clamp(1.75rem, 4vw, 2rem);
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: clamp(0.9375rem, 2vw, 1rem);
-  animation: fadeIn 0.6s ease-out 0.6s backwards;
-}
-
-.signup-prompt a {
-  color: var(--color-accent);
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.signup-prompt a::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.signup-prompt a:hover {
-  color: var(--color-primary);
-}
-
-.signup-prompt a:hover::after {
-  width: 100%;
-}
-
 /* Animations */
 @keyframes slideUp {
   from {
@@ -318,18 +302,22 @@ button[type="submit"]:disabled {
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
-  div > div {
+  .ask-question-view > * {
     padding: clamp(1.5rem, 5vw, 2rem);
     border-radius: 1rem;
   }
   
-  h2 {
+  h3 {
     margin-bottom: 1.75rem;
   }
   
-  input[type="email"],
-  input[type="password"] {
+  input[type="text"],
+  textarea {
     padding: 0.875rem;
+  }
+  
+  textarea {
+    min-height: 140px;
   }
   
   button[type="submit"] {
@@ -339,20 +327,20 @@ button[type="submit"]:disabled {
 
 /* Ensure 16px minimum on mobile to prevent zoom */
 @media (max-width: 768px) {
-  input[type="email"],
-  input[type="password"] {
+  input[type="text"],
+  textarea {
     font-size: 16px;
   }
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  div > div {
+  .ask-question-view > * {
     border-width: 2px;
   }
   
-  input[type="email"],
-  input[type="password"] {
+  input[type="text"],
+  textarea {
     border-width: 2px;
   }
 }

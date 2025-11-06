@@ -92,7 +92,13 @@ export const useUserStore = defineStore("userStore", {
         return { success: true };
 
       } catch (error) {
-        this.error = error.message || "Failed to sign in.";
+        // --- THIS IS THE FIX ---
+        if (error.code === 'auth/invalid-credential') {
+          this.error = 'Invalid email or password. Please try again.';
+        } else {
+          this.error = error.message || "Failed to sign in.";
+        }
+        // --- END FIX ---
         return { success: false, error: error };
       } finally {
         this.isLoading = false;

@@ -21,10 +21,15 @@ const requireAuth = (to, from, next) => {
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: () => import('@/views/HomeView.vue'), // Lazy load
+    name: 'Landing',
+    component: () => import('@/views/LandingView.vue'), // Lazy load
     // This view will contain the QuestionCatalog
     // We'll add 'beforeEnter: requireAuth' later
+  },
+  {
+    path:'/feed',
+    name:'Home',
+    component: ()=>import('@/views/HomeView.vue')
   },
   {
     path: '/login',
@@ -37,11 +42,24 @@ const routes = [
     component: () => import('@/views/SignupView.vue'), // Lazy load
   },
   {
+    path: '/ask',
+    name: 'AskQuestion',
+    component: () => import('@/views/AskQuestionView.vue'), // We will create this file next
+    beforeEnter: requireAuth, // This protects the route!
+  },
+  {
     path: '/question/:id',
     name: 'QuestionDetail',
     component: () => import('@/views/QuestionDetailView.vue'), // Lazy load
     // We'll create this file in the next step
     props: true,
+  },
+  {
+    path: '/question/:id/answer',
+    name: 'PostAnswer',
+    component: () => import('@/views/PostAnswerView.vue'), // We will create this file next
+    beforeEnter: requireAuth, // This protects the route!
+    props: true, // This passes the :id as a prop
   },
 ];
 
