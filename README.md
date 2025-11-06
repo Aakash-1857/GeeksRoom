@@ -1,6 +1,38 @@
 # GeeksRoom
 
-This template should help get you started developing with Vue 3 in Vite.
+A modern, community-driven Q&A platform built with Vue 3 and Firebase. Inspired by Stack Overflow, GeeksRoom is a space for developers and tech enthusiasts to ask questions, share knowledge, and collaborate.
+
+This app was built from the ground up, from initial design and secure backend architecture to a fully responsive, pixel-perfect UI.
+
+---
+
+## 🚀 Live Demo
+
+The project is fully deployed and live on Firebase Hosting.
+
+**You can view and use the live application here:** [**https://geekroom-e7b67.web.app/**](https://geekroom-e7b67.web.app/)
+
+
+## ✨ Core Features
+
+* **Full CRUD Operations:** Users can create, read, edit, and delete their own questions and answers.
+* **Real-time Voting:** Secure, real-time upvoting and downvoting on both questions and answers.
+* **Secure Authentication:** Complete user auth flow (Signup, Login, Logout) using Firebase Authentication.
+* **Protected Routes & Rules:** Client-side route guards and server-side Firestore Security Rules ensure only authenticated users can post, edit, or vote.
+* **Rich Text Content:** Built-in Markdown parser (`marked`) and sanitizer (`dompurify`) to safely render user-generated code blocks, lists, and blockquotes.
+* **Dynamic Data:** The landing page live-fetches total user and question counts from Firestore using `getCountFromServer()` for high efficiency.
+* **Modern UI:** A fully responsive, mobile-first design with a cohesive violet-and-black theme, built from scratch with custom CSS.
+
+## 🛠️ Tech Stack
+
+* **Frontend:** Vue 3 (Composition API, Vue Router)
+* **State Management:** Pinia
+* **Backend:** Firebase
+* **Authentication:** Firebase Auth
+* **Database:** Cloud Firestore (for real-time data)
+* **Hosting:** Firebase Hosting
+* **Styling:** Custom CSS (Mobile-first, with CSS Variables)
+* **Utilities:** `marked` (Markdown parsing), `dompurify` (HTML sanitizing)
 
 ## Recommended IDE Setup
 
