@@ -1,8 +1,9 @@
 # GeeksRoom
 
-A modern, community-driven Q&A platform built with Vue 3 and Firebase. Inspired by Stack Overflow, GeeksRoom is a space for developers and tech enthusiasts to ask questions, share knowledge, and collaborate.
+A modern, community-driven Q&A platform built with Vue 3 and Firebase. **GeeksRoom** is inspired by Stack Overflow and serves as a space for developers and tech enthusiasts to ask questions, share knowledge, and collaborate.
 
-This app was built from the ground up, from initial design and secure backend architecture to a fully responsive, pixel-perfect UI.
+Developed by students of the **MAC branch at Netaji Subhas University of Technology (NSUT)**, this project emphasizes the practical application of database management concepts, featuring a secure backend architecture and a fully responsive, pixel-perfect user interface.
+
 
 ---
 
