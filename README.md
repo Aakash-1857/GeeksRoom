@@ -12,6 +12,8 @@ The project is fully deployed and live on Firebase Hosting.
 
 **You can view and use the live application here:** [**https://geekroom-e7b67.web.app/**](https://geekroom-e7b67.web.app/)
 
+## 👨‍💻 Team
+
 The project was a teamwork of:
 
 | Name | Roll No. |
