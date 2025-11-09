@@ -12,6 +12,13 @@ The project is fully deployed and live on Firebase Hosting.
 
 **You can view and use the live application here:** [**https://geekroom-e7b67.web.app/**](https://geekroom-e7b67.web.app/)
 
+The project was a teamwork of:
+
+| Name | Roll No. |
+|------|-----------|
+| **Aakash** | 2024UCM2848 |
+| **Janvi** | 2024UCM2378 |
+| **Himanshi** | 2024UCM2331 |
 
 ## ✨ Core Features
 
